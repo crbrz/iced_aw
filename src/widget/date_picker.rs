@@ -6,8 +6,7 @@ use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButt
 
 use chrono::Local;
 use iced_core::{
-    Clipboard, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Vector,
-    Widget,
+    Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
@@ -216,7 +215,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -226,7 +224,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );

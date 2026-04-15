@@ -139,8 +139,7 @@ pub fn white(theme: &Theme, _status: Status) -> Style {
 }
 
 fn backing_with_text(theme: &Theme, color: Color, text_color: Color) -> Style {
-    let palette = theme.extended_palette();
-    let foreground = theme.palette();
+    let palette = theme.palette();
 
     Style {
         border_color: color,
@@ -148,22 +147,21 @@ fn backing_with_text(theme: &Theme, color: Color, text_color: Color) -> Style {
         head_text_color: text_color,
         close_color: text_color,
         background: palette.background.base.color.into(),
-        body_text_color: foreground.text,
-        foot_text_color: foreground.text,
+        body_text_color: palette.primary.base.text,
+        foot_text_color: palette.primary.base.text,
         ..Style::default()
     }
 }
 
 fn backing_only(theme: &Theme, color: Color) -> Style {
-    let palette = theme.extended_palette();
-    let foreground = theme.palette();
+    let palette = theme.palette();
 
     Style {
         border_color: color,
         head_background: color.into(),
         background: palette.background.base.color.into(),
-        body_text_color: foreground.text,
-        foot_text_color: foreground.text,
+        body_text_color: palette.primary.base.text,
+        foot_text_color: palette.primary.base.text,
         ..Style::default()
     }
 }

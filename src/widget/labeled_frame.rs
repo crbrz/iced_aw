@@ -28,7 +28,7 @@ impl Catalog for iced_widget::Theme {
 
     fn default<'a>() -> Self::Class<'a> {
         Box::new(|theme| Style {
-            color: iced_core::Background::Color(theme.extended_palette().secondary.weak.color),
+            color: iced_core::Background::Color(theme.palette().secondary.weak.color),
             radius: iced_core::border::Radius::default(),
         })
     }
@@ -385,7 +385,6 @@ where
         layout: iced_core::Layout<'_>,
         cursor: iced_core::mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn iced_core::Clipboard,
         shell: &mut iced_core::Shell<'_, Message>,
         viewport: &iced_core::Rectangle,
     ) {
@@ -394,9 +393,9 @@ where
             .zip(&mut state.children)
             .zip(layout.children())
         {
-            child.as_widget_mut().update(
-                state, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
+            child
+                .as_widget_mut()
+                .update(state, event, layout, cursor, renderer, shell, viewport);
         }
     }
 

@@ -2,8 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
 use iced_core::{
-    Alignment, Clipboard, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
-    Size, Vector, Widget,
+    Alignment, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
+    Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
@@ -188,7 +188,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -197,9 +196,9 @@ where
             .zip(&mut state.children)
             .zip(layout.children())
             .for_each(|((child, state), layout)| {
-                child.as_widget_mut().update(
-                    state, event, layout, cursor, renderer, clipboard, shell, viewport,
-                );
+                child
+                    .as_widget_mut()
+                    .update(state, event, layout, cursor, renderer, shell, viewport);
             });
     }
 

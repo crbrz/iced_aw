@@ -130,7 +130,6 @@ impl<Message, Theme, Renderer: iced_core::Renderer> Widget<Message, Theme, Rende
         layout: iced_core::Layout<'_>,
         cursor: iced_core::mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn iced_core::Clipboard,
         shell: &mut iced_core::Shell<'_, Message>,
         viewport: &iced_core::Rectangle,
     ) {
@@ -140,9 +139,9 @@ impl<Message, Theme, Renderer: iced_core::Renderer> Widget<Message, Theme, Rende
             .zip(layout.children())
             .zip(self.elements.iter_mut())
         {
-            element.as_widget_mut().update(
-                state, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
+            element
+                .as_widget_mut()
+                .update(state, event, layout, cursor, renderer, shell, viewport);
         }
     }
 

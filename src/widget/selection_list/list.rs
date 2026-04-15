@@ -3,15 +3,17 @@
 use crate::selection_list::Catalog;
 
 use iced_core::{
-    Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle,
-    Shell, Size, Widget,
+    Border, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
+    Widget,
     alignment::Vertical,
     layout::{Limits, Node},
     mouse::{self, Cursor},
-    renderer, touch,
-    widget::text::{LineHeight, Wrapping},
+    renderer,
+    text::Ellipsis,
+    touch,
     widget::{
         Tree,
+        text::{LineHeight, Wrapping},
         tree::{State, Tag},
     },
 };
@@ -128,7 +130,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         _viewport: &Rectangle,
     ) {
@@ -270,6 +271,8 @@ where
                     line_height: LineHeight::default(),
                     shaping: iced_widget::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
+                    ellipsis: Ellipsis::default(),
+                    hint_factor: None,
                 },
                 Point::new(bounds.x, bounds.center_y()),
                 text_color,

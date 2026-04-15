@@ -71,16 +71,15 @@ impl Catalog for Theme {
 /// The primary theme of a [`TimePicker`](crate::widget::TimePicker).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
-    let foreground = theme.palette();
+    let palette = theme.palette();
 
     let base = Style {
         background: palette.background.base.color.into(),
         border_radius: 15.0,
         border_width: 1.0,
-        border_color: foreground.text,
-        text_color: foreground.text,
-        clock_number_color: foreground.text,
+        border_color: palette.primary.base.text,
+        text_color: palette.primary.base.text,
+        clock_number_color: palette.primary.base.text,
         clock_number_background: palette.background.base.color,
         clock_dots_color: [0.87, 0.87, 0.87].into(),
         clock_hand_color: [0.87, 0.87, 0.87].into(),

@@ -58,18 +58,17 @@ impl Catalog for Theme {
 /// The primary theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
-    let foreground = theme.palette();
+    let palette = theme.palette();
 
     let base = Style {
         background: palette.background.base.color.into(),
         border_radius: 15.0,
         border_width: 1.0,
-        border_color: foreground.text,
-        text_color: foreground.text,
+        border_color: palette.primary.base.text,
+        text_color: palette.primary.base.text,
         text_attenuated_color: Color {
-            a: foreground.text.a * 0.5,
-            ..foreground.text
+            a: palette.primary.base.text.a * 0.5,
+            ..palette.primary.base.text
         },
         day_background: palette.background.base.color.into(),
     };

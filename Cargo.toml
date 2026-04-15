@@ -67,19 +67,16 @@ iced_aw = { path = "./" }
 getrandom = { version = "0.4.2", features = ["wasm_js"] }
 rand = "0.10.1"
 env_logger = "0.11.10"                                        # For wrap example
-iced_test = "0.14" # for UI testing
-
-[dev-dependencies.iced]
-version = "0.14.0"
-features = ["advanced"]
+iced_test = { git = "https://github.com/iced-rs/iced.git", branch = "master" } # for UI testing
 
 [dependencies]
-iced_core = { version = "0.14.0" }
-iced_widget = { version = "0.14.2" }
+iced = { git = "https://github.com/iced-rs/iced.git", branch = "master", features = ["advanced"] }
+iced_core = { git = "https://github.com/iced-rs/iced.git", branch = "master" }
+iced_widget = { git = "https://github.com/iced-rs/iced.git", branch ="master" }
 
 cfg-if = "1.0"
 chrono = { version = "0.4.44", optional = true, features = ["wasmbind"] }
-iced_fonts = { version = "0.3.0", features = [
+iced_fonts = { git = "https://github.com/crbrz/iced_fonts.git", branch = "patch", features = [
   "advanced_text",
 ]}
 num-format = { version = "0.4.4", optional = true }

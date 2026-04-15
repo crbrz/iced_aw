@@ -1,11 +1,12 @@
 // This example demonstrates how to use the menu widget
 
 use iced::border::Radius;
+use iced::theme::palette;
 use iced::widget::{
     Space, button, checkbox, column as col, container, pick_list, row, scrollable, slider, space,
     text, text_input, toggler, tooltip, vertical_slider,
 };
-use iced::{Border, Color, Element, Length, Padding, Size, Theme, alignment, theme};
+use iced::{Border, Color, Element, Length, Padding, Size, Theme, alignment};
 
 use iced_aw::menu::{self, Item, Menu};
 use iced_aw::style::{Status, menu_bar::primary};
@@ -96,9 +97,9 @@ impl Default for App {
     fn default() -> Self {
         let theme = iced::Theme::custom(
             "Custom Theme",
-            theme::Palette {
+            palette::Seed {
                 primary: Color::from([0.45, 0.25, 0.57]),
-                ..iced::Theme::Light.palette()
+                ..iced::Theme::Light.seed()
             },
         );
 
@@ -141,9 +142,9 @@ impl App {
             Message::ColorChange(c) => {
                 self.theme = iced::Theme::custom(
                     "Color Change",
-                    theme::Palette {
+                    palette::Seed {
                         primary: c,
-                        ..self.theme.palette()
+                        ..self.theme.seed()
                     },
                 );
                 self.title = format!("[{:.2}, {:.2}, {:.2}]", c.r, c.g, c.b);
@@ -158,17 +159,17 @@ impl App {
                 if b {
                     self.theme = iced::Theme::custom(
                         "Dark",
-                        theme::Palette {
-                            primary,
-                            ..iced::Theme::Dark.palette()
+                        palette::Seed {
+                            primary: primary.base.color,
+                            ..iced::Theme::Dark.seed()
                         },
                     )
                 } else {
                     self.theme = iced::Theme::custom(
                         "Light",
-                        theme::Palette {
-                            primary,
-                            ..iced::Theme::Light.palette()
+                        palette::Seed {
+                            primary: primary.base.color,
+                            ..iced::Theme::Light.seed()
                         },
                     )
                 }
@@ -318,7 +319,7 @@ impl App {
                 (color_button([0.76, 0.82, 0.20])),
                 (color_button([0.17, 0.27, 0.33])),
                 (debug_button_f("Primary"), {
-                    let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
+                    let [r, g, b, _] = self.theme.palette().primary.base.color.into_rgba8();
 
                     menu_tpl_2(menu_items!(
                         (slider(0..=255, r, move |x| {
@@ -455,7 +456,7 @@ impl App {
                 let slider_width = 30;
                 let spacing = 5;
                 let pad = 20;
-                let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
+                let [r, g, b, _] = self.theme.palette().primary.base.color.into_rgba8();
 
                 menu_tpl_1(menu_items!(
                     (labeled_separator("Primary")),
@@ -555,10 +556,10 @@ impl App {
                             .width(Length::Fill)
                             .align_y(alignment::Vertical::Center),
                         pick_list(
-                            Fruit::ALL,
                             Some(self.fruit),
-                            Message::FruitSelected
-                        ),
+                            Fruit::ALL,
+                            Fruit::to_string
+                        ).on_select(Message::FruitSelected),
                     ].padding([0, 8])
                     .align_y(iced::Alignment::Center)),
                     (debug_button_f("Item")),
@@ -589,10 +590,10 @@ impl App {
                                     .width(Length::Fill)
                                     .align_y(alignment::Vertical::Center),
                                 pick_list(
-                                    Fruit::ALL,
                                     Some(self.fruit),
-                                    Message::FruitSelected
-                                ),
+                                    Fruit::ALL,
+                                    Fruit::to_string
+                                ).on_select(Message::FruitSelected),
                             ].align_y(iced::Alignment::Center),
                             Some(Length::Fill),
                             Some(Length::Shrink),
@@ -623,9 +624,9 @@ impl App {
                 ..Default::default()
             },
             path: Color::from_rgb(
-                theme.extended_palette().primary.weak.color.r * 1.2,
-                theme.extended_palette().primary.weak.color.g * 1.2,
-                theme.extended_palette().primary.weak.color.b * 1.2,
+                theme.palette().primary.weak.color.r * 1.2,
+                theme.palette().primary.weak.color.g * 1.2,
+                theme.palette().primary.weak.color.b * 1.2,
             ).into(),
             ..primary(theme, status)
         });
@@ -658,7 +659,7 @@ impl App {
 
         fn back_style(theme: &iced::Theme) -> container::Style {
             container::Style {
-                background: Some(theme.extended_palette().primary.base.color.into()),
+                background: Some(theme.palette().primary.base.color.into()),
                 ..Default::default()
             }
         }
@@ -684,7 +685,7 @@ fn base_button<'a>(
         .style(|theme, status| {
             use iced_widget::button::{Status, Style};
 
-            let palette = theme.extended_palette();
+            let palette = theme.palette();
             let base = Style {
                 text_color: palette.background.base.text,
                 border: Border::default().rounded(6.0),
@@ -810,7 +811,7 @@ fn separator() -> quad::Quad {
 fn dot_separator<'a>(theme: &iced::Theme) -> Element<'a, Message, iced::Theme, iced::Renderer> {
     row((0..20).map(|_| {
         quad::Quad {
-            quad_color: theme.extended_palette().background.base.text.into(),
+            quad_color: theme.palette().background.base.text.into(),
             inner_bounds: InnerBounds::Square(4.0),
             ..separator()
         }

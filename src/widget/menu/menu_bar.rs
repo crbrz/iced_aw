@@ -6,8 +6,8 @@
 #![allow(clippy::enum_glob_use)]
 
 use iced_core::{
-    Clipboard, Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Widget,
-    alignment, event,
+    Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Widget, alignment,
+    event,
     layout::{Limits, Node},
     mouse, overlay, renderer,
     widget::{Operation, Tree, tree},
@@ -390,7 +390,6 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -418,9 +417,7 @@ where
             slice_layout.children()
         )
         .for_each(|((item, tree), layout)| {
-            item.update(
-                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
+            item.update(tree, event, layout, cursor, renderer, shell, viewport);
         });
 
         let bar_bounds = layout.bounds();

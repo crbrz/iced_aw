@@ -2,13 +2,14 @@
 //!
 //! A [`NumberInput`] has some local [`State`].
 use iced_core::{
-    Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
-    Point, Rectangle, Shadow, Shell, Size, Widget,
+    Alignment, Background, Border, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shadow, Shell, Size, Widget,
     alignment::Vertical,
     keyboard,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
+    text::Ellipsis,
     widget::{
         self, Operation, Tree,
         tree::{State, Tag},
@@ -482,6 +483,19 @@ where
             _ => false,
         }
     }
+
+    /// Check if the value that would result from the input is valid and within bound
+    fn check_value(&mut self, value: &str) -> bool {
+        let supports_negative = self.min() < T::zero();
+        if let Ok(value) = T::from_str(value) {
+            self.valid(&value)
+        } else if value.is_empty() || value == "-" && supports_negative {
+            self.value = T::zero();
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
@@ -666,7 +680,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -710,30 +723,16 @@ where
         let mut sub_shell = Shell::new(&mut messages);
 
         // Function to forward the event to the underlying [`TypedInput`]
-        let mut forward_to_text = |widget: &mut Self, child, clipboard| {
+        let mut forward_to_text = |widget: &mut Self, child| {
             widget.content.update(
                 child,
                 &event.clone(),
                 content,
                 cursor,
                 renderer,
-                clipboard,
                 &mut sub_shell,
                 viewport,
             );
-        };
-
-        // Check if the value that would result from the input is valid and within bound
-        let supports_negative = self.min() < T::zero();
-        let mut check_value = |value: &str| {
-            if let Ok(value) = T::from_str(value) {
-                self.valid(&value)
-            } else if value.is_empty() || value == "-" && supports_negative {
-                self.value = T::zero();
-                true
-            } else {
-                false
-            }
         };
 
         match &event {
@@ -743,7 +742,7 @@ where
                 }
 
                 match key {
-                    keyboard::Event::ModifiersChanged(_) => forward_to_text(self, child, clipboard),
+                    keyboard::Event::ModifiersChanged(_) => forward_to_text(self, child),
                     keyboard::Event::KeyReleased { .. } => return,
                     keyboard::Event::KeyPressed {
                         key,
@@ -764,11 +763,11 @@ where
                         match key.as_ref() {
                             // Enter
                             keyboard::Key::Named(keyboard::key::Named::Enter) => {
-                                forward_to_text(self, child, clipboard);
+                                forward_to_text(self, child);
                             }
                             // Copy and selecting all
                             keyboard::Key::Character("c" | "a") if modifiers.command() => {
-                                forward_to_text(self, child, clipboard);
+                                forward_to_text(self, child);
                             }
                             // Cut
                             keyboard::Key::Character("x") if modifiers.command() => {
@@ -776,8 +775,8 @@ where
                                 if let Some((start, end)) = cursor.selection(&Value::new(&value)) {
                                     let _ = value.drain(start..end);
                                     // We check that once this part is cut, it's still a number
-                                    if check_value(&value) {
-                                        forward_to_text(self, child, clipboard);
+                                    if self.check_value(&value) {
+                                        forward_to_text(self, child);
                                     } else {
                                         return;
                                     }
@@ -787,30 +786,8 @@ where
                             }
                             // Paste
                             keyboard::Key::Character("v") if modifiers.command() => {
-                                // We need something to paste
-                                let Some(paste) =
-                                    clipboard.read(iced_core::clipboard::Kind::Standard)
-                                else {
-                                    return;
-                                };
-                                // We replace the selection or paste the text at the cursor
-                                match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Index(idx) => {
-                                        value.insert_str(idx, &paste);
-                                    }
-                                    cursor::State::Selection { start, end } => {
-                                        value.replace_range(sorted_range(start, end), &paste);
-                                    }
-                                }
-
+                                shell.read_clipboard(iced_core::clipboard::Kind::Text);
                                 shell.capture_event();
-
-                                // We check if it's now a valid number
-                                if check_value(&value) {
-                                    forward_to_text(self, child, clipboard);
-                                } else {
-                                    return;
-                                }
                             }
                             // Backspace
                             keyboard::Key::Named(keyboard::key::Named::Backspace) => {
@@ -837,8 +814,8 @@ where
                                 shell.capture_event();
 
                                 // We check if it's now a valid number
-                                if check_value(&value) {
-                                    forward_to_text(self, child, clipboard);
+                                if self.check_value(&value) {
+                                    forward_to_text(self, child);
                                 } else {
                                     return;
                                 }
@@ -869,8 +846,8 @@ where
                                 shell.capture_event();
 
                                 // We check if it's now a valid number
-                                if check_value(&value) {
-                                    forward_to_text(self, child, clipboard);
+                                if self.check_value(&value) {
+                                    forward_to_text(self, child);
                                 } else {
                                     return;
                                 }
@@ -898,7 +875,7 @@ where
                                 | keyboard::key::Named::ArrowRight
                                 | keyboard::key::Named::Home
                                 | keyboard::key::Named::End,
-                            ) if !has_value => forward_to_text(self, child, clipboard),
+                            ) if !has_value => forward_to_text(self, child),
                             // Everything else
                             _ => match text {
                                 // If we are trying to input text
@@ -917,8 +894,8 @@ where
                                     shell.request_redraw();
 
                                     // We check if it's now a valid number
-                                    if check_value(&value) {
-                                        forward_to_text(self, child, clipboard);
+                                    if self.check_value(&value) {
+                                        forward_to_text(self, child);
                                     } else {
                                         return;
                                     }
@@ -972,8 +949,40 @@ where
                 shell.capture_event();
                 shell.request_redraw();
             }
+            Event::Clipboard(event) => match event {
+                iced_core::clipboard::Event::Read(result) => {
+                    match result {
+                        Ok(content) => {
+                            match &**content {
+                                iced_core::clipboard::Content::Text(paste) => {
+                                    // We replace the selection or paste the text at the cursor
+                                    let cursor = text_input.cursor();
+                                    match cursor.state(&Value::new(&value)) {
+                                        cursor::State::Index(idx) => {
+                                            value.insert_str(idx, &paste);
+                                        }
+                                        cursor::State::Selection { start, end } => {
+                                            value.replace_range(sorted_range(start, end), &paste);
+                                        }
+                                    }
+
+                                    // We check if it's now a valid number
+                                    if self.check_value(&value) {
+                                        forward_to_text(self, child);
+                                    } else {
+                                        return;
+                                    }
+                                }
+                                _ => return,
+                            }
+                        }
+                        Err(_error) => return,
+                    }
+                }
+                iced_core::clipboard::Event::Written(_result) => {}
+            },
             // Any other event are just forwarded
-            _ => forward_to_text(self, child, clipboard),
+            _ => forward_to_text(self, child),
         }
 
         // We forward the shell of the [`TypedInput`] to the application
@@ -1153,6 +1162,8 @@ where
                 wrapping: Wrapping::default(),
                 align_x: Alignment::Center.into(),
                 align_y: Vertical::Center,
+                ellipsis: Ellipsis::default(),
+                hint_factor: None,
             },
             Point::new(dec_bounds.center_x(), dec_bounds.center_y()),
             decrease_btn_style.icon_color,
@@ -1190,6 +1201,8 @@ where
                 wrapping: Wrapping::default(),
                 align_x: Alignment::Center.into(),
                 align_y: Vertical::Center,
+                ellipsis: Ellipsis::default(),
+                hint_factor: None,
             },
             Point::new(inc_bounds.center_x(), inc_bounds.center_y()),
             increase_btn_style.icon_color,
