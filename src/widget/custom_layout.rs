@@ -92,13 +92,9 @@ impl<Message, Theme, Renderer: iced_core::Renderer> Widget<Message, Theme, Rende
                     .draw(state, renderer, theme, style, layout, cursor, viewport);
             });
     }
-
-    fn children(&self) -> Vec<Tree> {
-        self.elements.iter().map(|x| Tree::new(x)).collect()
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.elements);
+    
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut self.elements);
     }
 
     fn operate(
@@ -144,11 +140,7 @@ impl<Message, Theme, Renderer: iced_core::Renderer> Widget<Message, Theme, Rende
                 .update(state, event, layout, cursor, renderer, shell, viewport);
         }
     }
-
-    fn size_hint(&self) -> iced_core::Size<Length> {
-        self.size()
-    }
-
+    
     fn overlay<'a>(
         &'a mut self,
         state: &'a mut Tree,
@@ -284,30 +276,7 @@ mod tests {
 
         assert_eq!(layout.elements.len(), 2);
     }
-
-    #[test]
-    fn custom_layout_children_count_matches_elements() {
-        let elements = vec![
-            iced_widget::text::Text::new("Element 1").into(),
-            iced_widget::text::Text::new("Element 2").into(),
-            iced_widget::text::Text::new("Element 3").into(),
-        ];
-        let layout = TestCustomLayout::new(elements, simple_layout_fn);
-
-        let children =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&layout);
-        assert_eq!(children.len(), 3);
-    }
-
-    #[test]
-    fn custom_layout_empty_elements() {
-        let layout = TestCustomLayout::new(vec![], simple_layout_fn);
-
-        let children =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&layout);
-        assert_eq!(children.len(), 0);
-    }
-
+    
     #[test]
     fn custom_layout_length_fillportion() {
         let layout = TestCustomLayout::new(vec![], simple_layout_fn)
@@ -316,19 +285,5 @@ mod tests {
 
         assert_eq!(layout.width, Length::FillPortion(2));
         assert_eq!(layout.height, Length::FillPortion(3));
-    }
-
-    #[test]
-    fn custom_layout_size_hint_equals_size() {
-        let layout = TestCustomLayout::new(vec![], simple_layout_fn)
-            .width(100)
-            .height(50);
-
-        let size = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&layout);
-        let size_hint =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size_hint(&layout);
-
-        assert_eq!(size.width, size_hint.width);
-        assert_eq!(size.height, size_hint.height);
     }
 }

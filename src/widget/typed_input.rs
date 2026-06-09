@@ -300,6 +300,10 @@ where
     pub fn text(&self) -> &str {
         &self.text
     }
+
+    pub(crate) fn children(&self) -> Vec<Tree> {
+        Vec::new()
+    }
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
@@ -317,12 +321,8 @@ where
         <TextInput<_, _, _> as Widget<_, _, _>>::state(&self.text_input)
     }
 
-    fn children(&self) -> Vec<Tree> {
-        <TextInput<_, _, _> as Widget<_, _, _>>::children(&self.text_input)
-    }
-
-    fn diff(&self, state: &mut Tree) {
-        <TextInput<_, _, _> as Widget<_, _, _>>::diff(&self.text_input, state);
+    fn diff(&mut self, state: &mut Tree) {
+        <TextInput<_, _, _> as Widget<_, _, _>>::diff(&mut self.text_input, state);
     }
 
     fn size(&self) -> Size<Length> {
@@ -406,7 +406,7 @@ where
         viewport: &Rectangle,
     ) {
         let mut messages = Vec::new();
-        let mut sub_shell = Shell::new(&mut messages);
+        let mut sub_shell = shell.local(&mut messages);
         self.text_input.update(
             state,
             event,
@@ -419,7 +419,7 @@ where
 
         shell.request_redraw_at(sub_shell.redraw_request());
 
-        if sub_shell.is_layout_invalid() {
+        if sub_shell.is_layout_invalid().is_some() {
             shell.invalidate_layout();
         }
         if sub_shell.are_widgets_invalid() {
@@ -653,16 +653,5 @@ mod tests {
         // The tag should be the same as the underlying TextInput's tag
         let text_input_tag = <TextInput<_, _, _> as Widget<_, _, _>>::tag(&input.text_input);
         assert_eq!(tag, text_input_tag);
-    }
-
-    #[test]
-    fn typed_input_children_delegates_to_text_input() {
-        let value = 42u32;
-        let input = TestTypedInput::new("Enter a number", &value);
-
-        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&input);
-        let text_input_children =
-            <TextInput<_, _, _> as Widget<_, _, _>>::children(&input.text_input);
-        assert_eq!(children.len(), text_input_children.len());
     }
 }

@@ -3,7 +3,8 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    Element, Length,
+    Element,
+    Length::{self, Fit},
     widget::{Button, Column, Container, Scrollable, Text},
 };
 
@@ -55,7 +56,7 @@ impl CardExample {
 
         let content = Scrollable::new(element);
 
-        Container::new(Column::new().push(content).max_width(600))
+        Container::new(Column::new().push(content).width(Fit.max(600)))
             .width(Length::Fill)
             .height(Length::Fill)
             .padding(10)

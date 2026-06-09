@@ -147,8 +147,8 @@ fn backing_with_text(theme: &Theme, color: Color, text_color: Color) -> Style {
         head_text_color: text_color,
         close_color: text_color,
         background: palette.background.base.color.into(),
-        body_text_color: palette.primary.base.text,
-        foot_text_color: palette.primary.base.text,
+        body_text_color: palette.background.base.text,
+        foot_text_color: palette.background.base.text,
         ..Style::default()
     }
 }
@@ -160,7 +160,7 @@ fn backing_only(theme: &Theme, color: Color) -> Style {
         border_color: color,
         head_background: color.into(),
         background: palette.background.base.color.into(),
-        body_text_color: palette.primary.base.text,
+        body_text_color: palette.background.base.text,
         foot_text_color: palette.primary.base.text,
         ..Style::default()
     }

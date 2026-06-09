@@ -254,14 +254,9 @@ where
         tree::State::Some(Box::<MenuBarState>::default())
     }
 
-    /// \[Tree{stateless, \[widget_state, menu_state]}...]
-    fn children(&self) -> Vec<Tree> {
-        self.roots.iter().map(Item::tree).collect::<Vec<_>>()
-    }
-
     /// tree: Tree{bar, \[item_tree...]}
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children_custom(&mut self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{bar, \[item_tree...]}
@@ -316,7 +311,12 @@ where
                 .min(limits.max().width)
                 .max(limits.min().width),
             Length::Fixed(amount) => amount.min(limits.max().width).max(limits.min().width),
-            Length::Shrink => items_node_bounds.width,
+            Length::Shrink | Length::Fit => items_node_bounds.width,
+            Length::Bounded {
+                bounds: _,
+                sizing: _,
+            }
+            | Length::Fluid(_) => todo!(),
         };
 
         let lower_bound_rel = self.padding.left - bar_menu_state.scroll_offset;
@@ -847,16 +847,6 @@ mod tests {
 
         let tag = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::tag(&menu_bar);
         assert_eq!(tag, tree::Tag::of::<MenuBarState>());
-    }
-
-    #[test]
-    fn menu_bar_children_returns_item_trees() {
-        let items = vec![Item::new(Text::new("File")), Item::new(Text::new("Edit"))];
-
-        let menu_bar = TestMenuBar::new(items);
-        let children =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&menu_bar);
-        assert_eq!(children.len(), 2);
     }
 
     #[test]

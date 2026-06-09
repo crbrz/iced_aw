@@ -12,6 +12,7 @@ use crate::{
     style::{Status, date_picker::Style, style_state::StyleState},
 };
 use chrono::{Datelike, Local, NaiveDate};
+use iced::Length::Fit;
 use iced_core::text::Ellipsis;
 use iced_core::{
     Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
@@ -542,14 +543,14 @@ where
 
         // Buttons
         let cancel_limits =
-            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+            limits.width(Fit.max(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0)));
 
         let mut cancel_button =
             self.cancel_button
                 .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let submit_limits =
-            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+            limits.width(Fit.max(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0)));
 
         let mut submit_button =
             self.submit_button
@@ -649,7 +650,7 @@ where
             submit_button_layout,
             cursor,
             renderer,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -1153,15 +1154,8 @@ where
         + iced_widget::button::Catalog
         + iced_widget::container::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![
-            Tree::new(&self.cancel_button),
-            Tree::new(&self.submit_button),
-        ]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {

@@ -158,17 +158,9 @@ where
         tree::State::new(State::new())
     }
 
-    fn children(&self) -> Vec<Tree> {
-        let overlay_tree = self
-            .overlay_instance
-            .as_ref()
-            .map_or_else(Tree::empty, Tree::new);
-        vec![Tree::new(&self.underlay), overlay_tree]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.children[0].diff(&self.underlay);
-        if let Some(overlay) = self.overlay_instance.as_ref() {
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.children[0].diff(&mut self.underlay);
+        if let Some(overlay) = self.overlay_instance.as_mut() {
             tree.children[1].diff(overlay);
         }
     }
@@ -185,7 +177,7 @@ where
 
         if show {
             let content = self.overlay_instance.get_or_insert_with(&self.overlay);
-            state.children[1].diff(&*content);
+            state.children[1].diff(&mut *content);
 
             content
                 .as_widget_mut()
@@ -280,7 +272,7 @@ where
 
         let position = s.cursor_position;
         let content = self.overlay_instance.get_or_insert_with(&self.overlay);
-        tree.children[1].diff(&*content);
+        tree.children[1].diff(&mut *content);
         Some(
             ContextMenuOverlay::new(
                 position + translation,
@@ -380,18 +372,7 @@ mod tests {
             Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::tag(&context_menu);
         assert_eq!(tag, tree::Tag::of::<State>());
     }
-
-    #[test]
-    fn context_menu_has_two_children() {
-        let underlay = iced_widget::text::Text::new("Underlay");
-        let context_menu = TestContextMenu::new(underlay, create_overlay);
-
-        let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
-            &context_menu,
-        );
-        assert_eq!(children.len(), 2);
-    }
-
+    
     #[test]
     fn context_menu_size_matches_underlay() {
         let underlay = iced_widget::text::Text::new("Underlay");
@@ -459,21 +440,7 @@ mod tests {
         assert!(!s.show);
         assert_eq!(s.cursor_position, Point::ORIGIN);
     }
-
-    #[test]
-    fn widget_children_returns_two_elements() {
-        // Test that children() returns underlay and overlay
-        let underlay = iced_widget::text::Text::new("Underlay");
-        let context_menu = TestContextMenu::new(underlay, create_overlay);
-
-        let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
-            &context_menu,
-        );
-
-        // Should have 2 children: underlay and overlay
-        assert_eq!(children.len(), 2);
-    }
-
+    
     #[test]
     fn open_method_sets_force_open_to_true() {
         let underlay = iced_widget::text::Text::new("Underlay");

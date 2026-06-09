@@ -142,12 +142,8 @@ where
     Renderer: 'a + renderer::Renderer,
     Theme: Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.content)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(std::slice::from_ref(&self.content));
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_mut(&mut self.content));
     }
 
     fn size(&self) -> Size<Length> {
@@ -464,18 +460,8 @@ mod tests {
     }
 
     #[test]
-    fn badge_children_returns_single_content_tree() {
-        let badge = TestBadge::new(iced_widget::text::Text::new("Test"));
-        let children =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&badge);
-
-        // Badge should have exactly one child (the content element)
-        assert_eq!(children.len(), 1);
-    }
-
-    #[test]
     fn badge_diff_updates_content_tree() {
-        let badge = TestBadge::new(iced_widget::text::Text::new("Original"));
+        let mut badge = TestBadge::new(iced_widget::text::Text::new("Original"));
         let content = Element::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::from(
             iced_widget::text::Text::new("Original"),
         );
@@ -486,7 +472,7 @@ mod tests {
         };
 
         // Verify diff doesn't panic and properly handles the tree
-        Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::diff(&badge, &mut tree);
+        Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::diff(&mut badge, &mut tree);
 
         // Tree should still have one child after diff
         assert_eq!(tree.children.len(), 1);

@@ -12,6 +12,7 @@ use crate::{
 };
 
 use crate::iced_aw_font::advanced_text::{cancel, ok};
+use iced::Length::Fit;
 use iced_core::{
     Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
     Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
@@ -584,8 +585,8 @@ where
             .shrink(PADDING)
             .width(Length::Fill)
             .height(Length::Fill)
-            .max_width(max_width)
-            .max_height(max_height);
+            .width(Fit.max(max_width))
+            .height(Fit.max(max_height));
 
         let divider = if bounds.width > bounds.height {
             Row::<(), Theme, Renderer>::new()
@@ -702,7 +703,7 @@ where
             submit_button_layout,
             cursor,
             renderer,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -1075,7 +1076,7 @@ where
 
     // Buttons
     let cancel_limits =
-        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0));
+        block2_limits.width(Fit.max(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0)));
 
     let mut cancel_button = color_picker.cancel_button.layout(
         &mut color_picker.tree.children[0],
@@ -1084,7 +1085,7 @@ where
     );
 
     let submit_limits =
-        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0));
+        block2_limits.width(Fit.max(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0)));
 
     let mut submit_button = color_picker.submit_button.layout(
         &mut color_picker.tree.children[1],
@@ -1833,15 +1834,8 @@ where
     Message: Clone,
     Theme: style::color_picker::Catalog + iced_widget::button::Catalog + iced_widget::text::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![
-            Tree::new(&self.cancel_button),
-            Tree::new(&self.submit_button),
-        ]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {

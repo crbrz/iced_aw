@@ -5,6 +5,7 @@ use crate::style::{
     selection_list::{Catalog, Style},
 };
 
+use iced::Length::Fit;
 use iced_core::{
     Border, Element, Event, Font, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Widget,
     alignment::Vertical,
@@ -179,12 +180,8 @@ where
     Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font> + 'a,
     Theme: Catalog + container::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.container as &dyn Widget<_, _, _>)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.container as &dyn Widget<_, _, _>]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.container as &mut dyn Widget<_, _, _>]);
         let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
         state.values = self
@@ -242,7 +239,7 @@ where
             _ => limits.max().width as u32,
         };
 
-        let limits = limits.max_width(max_width as f32 + self.padding.x());
+        let limits = limits.width(Fit.max(max_width as f32 + self.padding.x()));
 
         let content = self
             .container
@@ -456,18 +453,6 @@ mod tests {
             tree::Tag::of::<State<<iced_widget::Renderer as iced_core::text::Renderer>::Paragraph>>(
             )
         );
-    }
-
-    #[test]
-    fn selection_list_has_one_child() {
-        let options = vec!["Option 1".to_owned()];
-
-        let selection_list = TestSelectionList::new(&options, TestMessage::Selected);
-
-        let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
-            &selection_list,
-        );
-        assert_eq!(children.len(), 1);
     }
 
     #[test]

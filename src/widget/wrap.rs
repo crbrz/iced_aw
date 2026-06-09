@@ -1,6 +1,7 @@
 //! A widget that displays its children in multiple horizontal or vertical runs.
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
+use iced::Length::Fit;
 use iced_core::{
     Alignment, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
     Vector, Widget,
@@ -165,12 +166,8 @@ where
     Self: WrapLayout<Renderer>,
     Renderer: renderer::Renderer,
 {
-    fn children(&self) -> Vec<Tree> {
-        self.elements.iter().map(Tree::new).collect()
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.elements);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut self.elements);
     }
 
     fn size(&self) -> Size<Length> {
@@ -353,8 +350,8 @@ where
             .shrink(padding)
             .width(self.width)
             .height(self.height)
-            .max_width(self.max_width)
-            .max_height(self.max_height);
+            .width(Fit.max(self.max_width))
+            .height(Fit.max(self.max_height));
         let max_width = limits.max().width;
 
         let mut children = tree.children.iter_mut();
@@ -440,8 +437,8 @@ where
             .shrink(padding)
             .width(self.width)
             .height(self.height)
-            .max_width(self.max_width)
-            .max_height(self.max_height);
+            .width(Fit.max(self.max_width))
+            .height(Fit.max(self.max_height));
         let max_height = limits.max().height;
 
         let mut children = tree.children.iter_mut();

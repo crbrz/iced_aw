@@ -3,7 +3,8 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    Alignment, Element, Length,
+    Alignment, Element,
+    Length::{self, Fit},
     widget::{Column, Container, Row, Text},
 };
 
@@ -46,7 +47,7 @@ impl BadgeExample {
         let content = Column::new()
             .push(Text::new("Messages").size(32))
             .spacing(10)
-            .max_width(300);
+            .width(Fit.max(300));
 
         let content_messages =
             self.messages

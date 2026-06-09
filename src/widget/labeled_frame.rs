@@ -210,16 +210,9 @@ where
             vec![title_layout, content_layout],
         )
     }
-
-    fn children(&self) -> Vec<iced_core::widget::Tree> {
-        vec![
-            iced_core::widget::Tree::new(&self.title),
-            iced_core::widget::Tree::new(&self.content),
-        ]
-    }
-
-    fn diff(&self, tree: &mut iced_core::widget::Tree) {
-        tree.diff_children(&[&self.title, &self.content]);
+    
+    fn diff(&mut self, tree: &mut iced_core::widget::Tree) {
+        tree.diff_children(&mut [&mut self.title, &mut self.content]);
     }
 
     fn draw(
@@ -440,10 +433,6 @@ where
             .collect::<Vec<_>>();
 
         (!children.is_empty()).then(|| iced_core::overlay::Group::with_children(children).overlay())
-    }
-
-    fn size_hint(&self) -> iced_core::Size<Length> {
-        self.size()
     }
 }
 

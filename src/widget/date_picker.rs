@@ -190,12 +190,8 @@ where
         widget::tree::State::new(State::new(self.date))
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &self.overlay_state]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.underlay, &mut self.overlay_state]);
     }
 
     fn size(&self) -> Size<Length> {
@@ -461,24 +457,7 @@ mod tests {
         let tag = Widget::<TestMessage, iced_widget::Theme, Renderer>::tag(&date_picker);
         assert_eq!(tag, Tag::of::<State>());
     }
-
-    #[test]
-    fn date_picker_has_two_children() {
-        let underlay = iced_widget::text::Text::new("Pick a date");
-        let date = Date::from_ymd(2024, 1, 1);
-
-        let date_picker = TestDatePicker::new(
-            false,
-            date,
-            underlay,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&date_picker);
-        assert_eq!(children.len(), 2);
-    }
-
+    
     #[test]
     fn date_picker_size_matches_underlay() {
         let underlay = iced_widget::text::Text::new("Pick a date");

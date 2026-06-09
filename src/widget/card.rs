@@ -7,6 +7,7 @@ pub use crate::style::{
     card::{Catalog, Style},
     status::{Status, StyleFn},
 };
+use iced::Length::Fit;
 use iced_core::{
     Alignment, Border, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shadow,
     Shell, Size, Vector, Widget,
@@ -273,33 +274,19 @@ where
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        let mut children = vec![Tree::new(&self.head), Tree::new(&self.body)];
-
-        if let Some(foot) = &self.foot {
-            children.push(Tree::new(foot));
-        }
-
-        if let Some(close_button) = &self.close_button {
-            children.push(Tree::new(close_button));
-        }
-
-        children
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        match (&self.foot, &self.close_button) {
+    fn diff(&mut self, tree: &mut Tree) {
+        match (&mut self.foot, &mut self.close_button) {
             (Some(foot), Some(close_button)) => {
-                tree.diff_children(&[&self.head, &self.body, foot, close_button]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body, foot, close_button]);
             }
             (Some(foot), None) => {
-                tree.diff_children(&[&self.head, &self.body, foot]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body, foot]);
             }
             (None, Some(close_button)) => {
-                tree.diff_children(&[&self.head, &self.body, close_button]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body, close_button]);
             }
             (None, None) => {
-                tree.diff_children(&[&self.head, &self.body]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body]);
             }
         }
     }
@@ -312,7 +299,9 @@ where
     }
 
     fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let limits = limits.max_width(self.max_width).max_height(self.max_height);
+        let limits = limits
+            .width(Fit.max(self.max_width))
+            .height(Fit.max(self.max_height));
 
         let close_button_tree_index = 2 + usize::from(self.foot.is_some());
 

@@ -18,6 +18,7 @@ use crate::{
     time_picker::{self, Time},
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
+use iced::Length::Fit;
 use iced_core::text::Ellipsis;
 use iced_core::{
     Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
@@ -502,8 +503,8 @@ where
             .shrink(PADDING)
             .width(Length::Fill)
             .height(Length::Fill)
-            .max_width(300.0)
-            .max_height(350.0);
+            .width(Fit.max(300.0))
+            .height(Fit.max(350.0));
 
         // Digital Clock
         let digital_clock_limits = limits;
@@ -540,14 +541,14 @@ where
 
         // Buttons
         let cancel_limits =
-            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+            limits.width(Fit.max(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0)));
 
         let mut cancel_button =
             self.cancel_button
                 .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let submit_limits =
-            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+            limits.width(Fit.max(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0)));
 
         let mut submit_button =
             self.submit_button
@@ -634,7 +635,7 @@ where
             cancel_button_layout,
             cursor,
             renderer,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -653,7 +654,7 @@ where
             submit_button_layout,
             cursor,
             renderer,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -1940,15 +1941,8 @@ where
     Message: Clone,
     Theme: Catalog + button::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![
-            Tree::new(&self.cancel_button),
-            Tree::new(&self.submit_button),
-        ]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {
@@ -2319,15 +2313,6 @@ mod tests {
 
         assert_eq!(state.time.hour(), 14); // 2 PM = 14:00 in 24h
         assert!(!state.use_24h);
-    }
-
-    #[test]
-    fn overlay_buttons_has_two_children() {
-        let buttons: TimePickerOverlayButtons<(), iced_widget::Theme> =
-            TimePickerOverlayButtons::default();
-
-        let children = Widget::<(), iced_widget::Theme, Renderer>::children(&buttons);
-        assert_eq!(children.len(), 2);
     }
 
     #[test]

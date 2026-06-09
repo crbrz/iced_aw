@@ -2,6 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `drop_down`*
 
+use iced::Length::Fit;
 use iced_core::{
     Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
     keyboard::{self, key::Named},
@@ -125,12 +126,8 @@ where
         );
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&self.overlay)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &self.overlay]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.underlay, &mut self.overlay]);
     }
 
     fn operate<'b>(
@@ -308,15 +305,15 @@ where
         let max_height_symmetric = (ref_center_y.min(max.height - ref_center_y) * 2.0).max(0.0);
 
         let limits = match self.alignment {
-            Alignment::Top => limits.max_height(height_above),
+            Alignment::Top => limits.height(Fit.max(height_above)),
             Alignment::TopStart | Alignment::TopEnd => {
-                limits.max_height((height_above + self.underlay_bounds.height).max(0.0))
+                limits.height(Fit.max((height_above + self.underlay_bounds.height).max(0.0)))
             }
-            Alignment::Bottom => limits.max_height(height_below),
+            Alignment::Bottom => limits.height(Fit.max(height_below)),
             Alignment::BottomEnd | Alignment::BottomStart => {
-                limits.max_height((height_below + self.underlay_bounds.height).max(0.0))
+                limits.height(Fit.max((height_below + self.underlay_bounds.height).max(0.0)))
             }
-            Alignment::Start | Alignment::End => limits.max_height(max_height_symmetric),
+            Alignment::Start | Alignment::End => limits.height(Fit.max(max_height_symmetric)),
         };
 
         let node = self
@@ -695,22 +692,6 @@ mod tests {
     // ============================================================================
     // Widget Trait Tests
     // ============================================================================
-
-    #[test]
-    fn drop_down_has_two_children() {
-        let underlay = Text::new("Click me");
-        let overlay = Text::new("Dropdown content");
-
-        let dropdown = TestDropDown::new(underlay, overlay, false);
-
-        let children =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&dropdown);
-        assert_eq!(
-            children.len(),
-            2,
-            "DropDown should have 2 children (underlay and overlay)"
-        );
-    }
 
     #[test]
     fn drop_down_size_matches_underlay() {

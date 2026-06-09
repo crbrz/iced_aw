@@ -513,17 +513,9 @@ where
         State::new(ModifierState::default())
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree {
-            tag: self.content.tag(),
-            state: self.content.state(),
-            children: self.content.children(),
-        }]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
+    fn diff(&mut self, tree: &mut Tree) {
         tree.diff_children_custom(
-            &[&self.content],
+            &mut [&mut self.content],
             |state, content| content.diff(state),
             |content| Tree {
                 tag: content.tag(),
@@ -720,7 +712,7 @@ where
 
         // We use a secondary shell to select handle the event of the underlying [`TypedInput`]
         let mut messages = Vec::new();
-        let mut sub_shell = Shell::new(&mut messages);
+        let mut sub_shell = shell.local(&mut messages);
 
         // Function to forward the event to the underlying [`TypedInput`]
         let mut forward_to_text = |widget: &mut Self, child| {
@@ -988,7 +980,7 @@ where
         // We forward the shell of the [`TypedInput`] to the application
         shell.request_redraw_at(sub_shell.redraw_request());
 
-        if sub_shell.is_layout_invalid() {
+        if sub_shell.is_layout_invalid().is_some() {
             shell.invalidate_layout();
         }
         if sub_shell.are_widgets_invalid() {
@@ -1380,16 +1372,7 @@ mod tests {
         let tag = Widget::<TestMessage, iced_widget::Theme, Renderer>::tag(&input);
         assert_eq!(tag, Tag::of::<ModifierState>());
     }
-
-    #[test]
-    fn number_input_has_one_child() {
-        let value = 10u32;
-        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
-
-        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&input);
-        assert_eq!(children.len(), 1); // Only the content (TypedInput) is a child initially
-    }
-
+    
     #[test]
     fn number_input_different_values() {
         let test_values = [(0, 0..=100), (50, 0..=100), (100, 0..=100), (25, 10..=50)];

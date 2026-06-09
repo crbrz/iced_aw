@@ -6,7 +6,6 @@ use iced::{
     Alignment, Element, Length,
     widget::{Button, Column, Row, Text, TextInput},
 };
-
 use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{TabBar, TabLabel};
 

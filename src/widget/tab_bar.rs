@@ -354,6 +354,8 @@ where
         self.width = width.into();
         self
     }
+
+    pub(crate) fn children(&self) -> Vec<Tree> { Vec::new() }
 }
 
 impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
@@ -517,7 +519,8 @@ where
             child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
-            let child_tree = Tree::new(element.as_widget());
+            let mut child_tree = Tree::empty();
+            element.as_widget_mut().diff(&mut child_tree);
             tree.children.insert(0, child_tree);
             &mut tree.children[0]
         };

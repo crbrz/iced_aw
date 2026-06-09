@@ -12,6 +12,7 @@
 
 use super::common::*;
 use super::flex;
+use iced::Length::Fit;
 use iced_core::{
     Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector, alignment,
     layout::{Layout, Limits, Node},
@@ -233,8 +234,8 @@ where
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
-    pub(super) fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(&self.items, |tree, item| item.diff(tree), Item::tree);
+    pub(super) fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children_custom(&mut self.items, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }
@@ -253,8 +254,8 @@ where
         debug!(target:"menu::Menu::layout", "");
 
         let limits = limits
-            .max_width(self.max_width)
-            .max_width(self.compute_max_available_width(parent_bounds, viewport));
+            .width(Fit.max(self.max_width))
+            .width(Fit.max(self.compute_max_available_width(parent_bounds, viewport)));
 
         let items_node = flex::resolve(
             flex::Axis::Vertical,
@@ -511,7 +512,7 @@ where
                     };
 
                     let mut temp_messages = vec![];
-                    let mut temp_shell = Shell::new(&mut temp_messages);
+                    let mut temp_shell = shell.local(&mut temp_messages);
 
                     let redraw_event =
                         Event::Window(window::Event::RedrawRequested(Instant::now()));
@@ -885,10 +886,10 @@ where
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     #[allow(clippy::option_if_let_else)]
-    pub(super) fn diff(&self, tree: &mut Tree) {
+    pub(super) fn diff(&mut self, tree: &mut Tree) {
         if let Some(t0) = tree.children.get_mut(0) {
-            t0.diff(&self.item);
-            if let Some(m) = self.menu.as_ref() {
+            t0.diff(&mut self.item);
+            if let Some(m) = self.menu.as_mut() {
                 if let Some(t1) = tree.children.get_mut(1) {
                     m.diff(t1);
                 } else {

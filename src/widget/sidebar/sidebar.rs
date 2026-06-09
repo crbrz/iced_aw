@@ -1362,15 +1362,7 @@ where
         self.width = width.into();
         self
     }
-}
 
-impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for SidebarWithContent<'_, Message, TabId, Theme, Renderer>
-where
-    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = Font>,
-    Theme: Catalog + text::Catalog,
-    TabId: Eq + Clone,
-{
     fn children(&self) -> Vec<Tree> {
         let tabs = Tree {
             tag: Tag::stateless(),
@@ -1380,19 +1372,27 @@ where
         let bar = Tree {
             tag: self.sidebar.tag(),
             state: self.sidebar.state(),
-            children: self.sidebar.children(),
+            children: Vec::new(),
         };
         vec![bar, tabs]
     }
+}
 
-    fn diff(&self, tree: &mut Tree) {
+impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for SidebarWithContent<'_, Message, TabId, Theme, Renderer>
+where
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = Font>,
+    Theme: Catalog + text::Catalog,
+    TabId: Eq + Clone,
+{
+    fn diff(&mut self, tree: &mut Tree) {
         // should be 2 elements in the list always if not lets reload them.
         if tree.children.len() != 2 {
             tree.children = self.children();
         }
 
         if let Some(tabs) = tree.children.get_mut(1) {
-            tabs.diff_children(&self.tabs);
+            tabs.diff_children(&mut self.tabs);
         }
     }
 

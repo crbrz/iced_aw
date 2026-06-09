@@ -6,6 +6,7 @@
 //! Future: Idea to implement leaders before/after the flushed element for `Start`/`End`
 //! alignments.
 
+use iced::Length::Fit;
 use iced_core::{
     Alignment, Element, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector,
     Widget, alignment,
@@ -148,9 +149,9 @@ where
     #[must_use]
     pub fn push(mut self, child: impl Into<Column<'a, Message, Theme, Renderer>>) -> Self {
         let child = child.into();
-        let child_size = child.size_hint();
-        self.width = self.width.enclose(child_size.width);
-        self.height = self.height.enclose(child_size.height);
+        let child_size = child.size();
+        self.width = self.width.stack(child_size.width);
+        self.height = self.height.stack(child_size.height);
         self.children.push(child.into());
         self
     }
@@ -201,12 +202,8 @@ impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     Renderer: iced_core::Renderer,
 {
-    fn children(&self) -> Vec<Tree> {
-        self.children.iter().map(Tree::new).collect()
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.children);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut self.children);
     }
 
     fn size(&self) -> Size<Length> {
@@ -222,7 +219,7 @@ where
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        let limits = limits.max_height(self.max_height);
+        let limits = limits.height(Fit.max(self.max_height));
         let node = layout::flex::resolve(
             layout::flex::Axis::Horizontal,
             renderer,
